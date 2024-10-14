@@ -25,9 +25,25 @@ const MatrixBackground = () => {
       rainDrops[x] = 1;
     }
 
-    const draw = () => {
+    // Load the Anonymous mask image
+    const maskImage = new Image();
+    maskImage.src = '/anonymous-mask.svg';
+    maskImage.onload = () => {
+      // Start the animation once the image is loaded
+      animate();
+    };
+
+    const animate = () => {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the mask
+      const maskSize = Math.min(canvas.width, canvas.height) * 0.8;
+      const maskX = (canvas.width - maskSize) / 2;
+      const maskY = (canvas.height - maskSize) / 2;
+      ctx.globalAlpha = 0.05; // Make the mask very faint
+      ctx.drawImage(maskImage, maskX, maskY, maskSize, maskSize);
+      ctx.globalAlpha = 1; // Reset alpha for the text
 
       ctx.fillStyle = '#0F0';
       ctx.font = fontSize + 'px monospace';
@@ -41,11 +57,14 @@ const MatrixBackground = () => {
         }
         rainDrops[i]++;
       }
+
+      requestAnimationFrame(animate);
     };
 
-    const interval = setInterval(draw, 30);
-
-    return () => clearInterval(interval);
+    return () => {
+      // Clean up
+      cancelAnimationFrame(animate);
+    };
   }, []);
 
   return <canvas ref={canvasRef} id="matrix" />;
